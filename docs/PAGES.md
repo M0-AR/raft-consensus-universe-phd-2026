@@ -5,15 +5,20 @@ GitHub Pages serves it as a live page next to the README.
 
 ## Option A — Deploy from branch (simplest, recommended here)
 
-1. Commit `preview.html` at the repo root and push to `main`.
+1. Push `main` with both copies: root `preview.html` + `index.html` and
+   `docs/preview.html` + `docs/index.html`, plus `.nojekyll` in both folders.
+   (`docs/preview.html` is a mechanical copy of the root file with the
+   `src="docs/…"` media prefix stripped — the diff must show only those lines.)
 2. Open the repo on GitHub → **Settings** → **Pages**.
 3. Under **Build and deployment → Source**, choose **Deploy from a branch**.
-4. Branch: `main`, folder: `/ (root)`. Save.
-5. Wait ~1 minute. Your site is live at:
+4. Branch: `main`, folder: `/docs` (recommended). `/ (root)` also works
+   because of the mirrors.
+5. Wait 1–2 min for the “pages build and deployment” Action. The site is live at:
 
-   `https://<your-user>.github.io/<your-repo>/preview.html`
+   `https://M0-AR.github.io/raft-consensus-universe-phd-2026/preview.html`
 
-6. Put that URL at the top of the README as `🌐 Live demo`.
+   (mirror: `…/docs/preview.html` — one of the two always resolves; with the
+   mirrors in place, `/preview.html` resolves under either source setting).
 
 Branch deployment serves static files only — which is exactly what
 `preview.html` is (inline CSS/JS, no server code), so nothing else is needed.

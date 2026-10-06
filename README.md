@@ -6,7 +6,7 @@
 ![Docker ready](https://img.shields.io/badge/docker-ready-blue.svg)
 ![Deterministic](https://img.shields.io/badge/seeds-deterministic-purple.svg)
 
-🌐 **Live demo (website version of this repo):** serve `preview.html` with GitHub Pages → `https://<you>.github.io/<repo>/preview.html` (setup: [§ GitHub Pages](#-github-pages--read-this-repo-as-a-website) + `docs/PAGES.md`).
+🌐 **Live demo:** https://M0-AR.github.io/raft-consensus-universe-phd-2026/preview.html — if that 404s, use https://M0-AR.github.io/raft-consensus-universe-phd-2026/docs/preview.html (same page; the two URLs cover the two Pages source settings — see [§ GitHub Pages](#-github-pages--read-this-repo-as-a-website) + `docs/PAGES.md`).
 
 > **CEO summary (30 seconds).** Anything that must not lose data — Kubernetes, databases, queues — keeps several copies of one record. This repo shows how five copies stay in perfect agreement while machines crash and networks split. It rebuilds the Raft consensus algorithm from zero in plain Python with no libraries, kills its own leaders on purpose, and measures the recovery: a new leader in ~200 ms, writes confirmed in ~20 ms, and 100 chaos runs with 7,982 kills and **zero** broken promises. Students learn consensus in an afternoon; engineers rehearse failure drills; researchers get seven measured findings with seeds to extend. Run three commands and every number below reappears on your machine.
 
@@ -280,12 +280,15 @@ python3 -m http.server 8000 --directory . >/dev/null 2>&1 &
 
 ## 🌐 GitHub Pages — read this repo as a website
 
-`preview.html` is a self-contained site (inline CSS/JS, no build). Publish it in 4 clicks:
+`preview.html` is a self-contained site (inline CSS/JS, no build). Both URLs below resolve — pick either Pages source setting:
 
-1. Commit `preview.html` at root, push to `main`.
-2. GitHub → **Settings → Pages** → Source: **Deploy from a branch**, Branch: `main`, folder: `/ (root)`. Save.
-3. Wait ~1 min → `https://<you>.github.io/<repo>/preview.html`.
-4. Paste that URL at the top of this README as 🌐 Live demo.
+- https://M0-AR.github.io/raft-consensus-universe-phd-2026/preview.html
+- https://M0-AR.github.io/raft-consensus-universe-phd-2026/docs/preview.html
+
+1. Push `main` (root `preview.html` + `index.html`, `docs/preview.html` + `docs/index.html`, `.nojekyll` in both).
+2. GitHub → **Settings → Pages** → Source: **Deploy from a branch**, Branch: `main`, folder: `/docs` (recommended) or `/ (root)` — both work.
+3. Wait 1–2 min for the “pages build and deployment” Action, then probe: `/`, `/preview.html`, `/docs/preview.html` should all return 200.
+4. If `/preview.html` 404s but `/docs/preview.html` 200s, Pages is serving source `/` — switch it to `/docs`, or keep `/` (mirrors cover it).
 
 Checklist + custom-domain + Actions alternative: [`docs/PAGES.md`](docs/PAGES.md).
 
