@@ -1,0 +1,20 @@
+services:
+  raft-sim:
+    build: .
+    container_name: raft-sim
+    volumes:
+      - ./results:/raft/results
+    command: ["python3", "scripts/run_all.py", "--quick"]
+  raft-chaos:
+    build: .
+    container_name: raft-chaos
+    volumes:
+      - ./results:/raft/results
+    command: ["python3", "experiments/exp_chaos_1000.py", "--runs", "100", "--secs", "10"]
+    profiles: ["chaos"]
+  raft-live:
+    build: .
+    container_name: raft-live
+    network_mode: host
+    command: ["python3", "experiments/exp_live.py"]
+    profiles: ["live"]

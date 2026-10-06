@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Raft Consensus Universe — Understandable Consensus, Measured</title>
+<meta name="description" content="Raft consensus from scratch in dependency-free Python: deterministic simulation, live TCP cluster, chaos-monkey benchmarks, 0 safety violations.">
+<style>
+:root{--bg:#0b1020;--bg2:#111936;--card:#16204a;--line:#2a3a7a;--txt:#eef2ff;--mut:#aab6e6;--acc:#7dd3fc;--acc2:#a78bfa;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:radial-gradient(1200px 600px at 80% -10%,#1b2a6b 0%,var(--bg) 55%) fixed,var(--bg);color:var(--txt)}
+a{color:var(--acc)}header{position:sticky;top:0;z-index:5;backdrop-filter:blur(10px);background:rgba(11,16,32,.8);border-bottom:1px solid var(--line)}
+.nav{max-width:1120px;margin:auto;display:flex;gap:14px;align-items:center;padding:12px 18px;flex-wrap:wrap}
+.nav b{font-size:15px}.nav a.btn{border:1px solid var(--line);border-radius:999px;padding:7px 14px;text-decoration:none;color:var(--txt);font-size:13px}.nav a.btn.p{background:linear-gradient(90deg,var(--acc),var(--acc2));color:#0b1020;border:0;font-weight:700}
+.wrap{max-width:1120px;margin:auto;padding:26px 18px 70px}
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:22px;align-items:start}@media(max-width:900px){.hero{grid-template-columns:1fr}}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.badges span{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--mut);background:rgba(255,255,255,.03)}
+h1{font-size:42px;line-height:1.05;margin:10px 0 8px}h2{font-size:26px;margin:34px 0 10px}h3{font-size:17px;margin:18px 0 8px}p,li{color:#dbe4ff;line-height:1.6;font-size:15px}.mut{color:var(--mut)}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.015));border:1px solid var(--line);border-radius:16px;padding:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}@media(max-width:900px){.grid4{grid-template-columns:repeat(2,1fr)}}
+.stat b{font-size:26px;display:block}.stat small{color:var(--mut)}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}@media(max-width:900px){.grid3{grid-template-columns:1fr}}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+code,pre{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:#070b1a;border:1px solid var(--line);border-radius:12px;padding:12px;overflow:auto;font-size:13px;line-height:1.5}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left}th{color:var(--mut);font-weight:600}
+canvas{width:100%;height:220px;background:#070b1a;border:1px solid var(--line);border-radius:12px}
+.nodes{display:flex;gap:10px;margin:10px 0}.node{flex:1;text-align:center;border:1px solid var(--line);border-radius:12px;padding:10px;font-size:13px}.node.L{border-color:var(--ok);box-shadow:0 0 0 1px var(--ok) inset}.node.C{border-color:var(--warn)}.dot{width:12px;height:12px;border-radius:50%;margin:0 auto 6px;background:#556}.L .dot{background:var(--ok)}.C .dot{background:var(--warn)}
+.bar{height:10px;border-radius:99px;background:#26315f;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2))}
+.kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:1px 7px;font-size:12px;background:#0e1530}
+footer{border-top:1px solid var(--line);padding:22px 18px;color:var(--mut);font-size:13px;text-align:center}
+.step{display:flex;gap:12px;margin:10px 0}.n{flex:0 0 30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(90deg,var(--acc),var(--acc2));color:#0b1020;font-weight:800}
+video{width:100%;border-radius:12px;border:1px solid var(--line);background:#000}
+img.shot{width:100%;border-radius:12px;border:1px solid var(--line)}
+</style>
+</head>
+<body>
+<header><div class="nav">
+<b>⛵ Raft Consensus Universe</b>
+<a class="btn" href="#start">Quick start</a><a class="btn" href="#beginner">Beginner guide</a><a class="btn" href="#benchmarks">Benchmarks</a><a class="btn" href="#video">Video demo</a><a class="btn" href="#pages">GitHub Pages</a>
+<a class="btn p" href="https://github.com/" target="_blank" rel="noopener">★ Star on GitHub</a>
+</div></header>
+<div class="wrap">
+
+<!-- HERO -->
+<div class="hero">
+<div>
+<div class="badges"><span>MIT License</span><span>Python 3.10+ · stdlib only</span><span>Docker ready</span><span>Deterministic seeds</span><span>5 nodes · 0 violations</span></div>
+<h1>Five servers. One record.<br>Zero disagreements.</h1>
+<p><b>CEO summary:</b> when machines crash and networks split, this repo keeps five copies of one record in perfect agreement — and proves it. It rebuilds the Raft consensus algorithm from zero in plain Python, kills its own leaders on purpose, and measures how fast it recovers: new leader in ~200&nbsp;ms, writes confirmed in ~20&nbsp;ms, 100 chaos runs with 7,982 kills and <b>zero</b> broken promises. If you run anything that must not lose data — Kubernetes, databases, queues — this is the 30-minute lab that makes consensus click.</p>
+<p>
+<a class="btn p nav" style="display:inline-block;text-decoration:none" href="#start">🚀 Run it in 3 commands</a>
+<a class="btn nav" style="display:inline-block;text-decoration:none" href="#video">▶ Watch the demo plan</a>
+</p>
+<p class="mut">🌐 Live demo: serve this file with GitHub Pages → <code>https://&lt;you&gt;.github.io/&lt;repo&gt;/preview.html</code> (setup in <a href="#pages">§ Pages</a>). README: <code>README.md</code> · Results: <code>results/*.json</code> · Paper draft: <code>paper/PAPER.md</code></p>
+</div>
+<div class="card">
+<h3 style="margin-top:0">Live cluster status (measured)</h3>
+<div class="grid4">
+<div class="stat"><b>196 ms</b><small>failover after kill (sim)</small></div>
+<div class="stat"><b>~20 ms</b><small>commit = 1 RTT (sim)</small></div>
+<div class="stat"><b>0 / 100</b><small>chaos runs broken</small></div>
+<div class="stat"><b>200 ms</b><small>failover (live TCP)</small></div>
+</div>
+<h3>Try the heartbeat below</h3>
+<p class="mut">Watch an election happen. Press <b>Kill leader</b> — a follower times out, asks for votes, wins a higher term, and heartbeats resume.</p>
+<div class="nodes" id="nodes"></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<button id="bKill" class="btn p">Kill leader</button>
+<button id="bHeal" class="btn">Restart + heal</button>
+<button id="bWrite" class="btn">Client write</button>
+</div>
+<p class="mut" id="blog">term 1 · leader S2 · heartbeats every 50ms</p>
+</div>
+</div>
+
+<!-- BEGINNER -->
+<h2 id="beginner">🌱 Beginner guide — read this and you are a professional</h2>
+<div class="card"><p><b>You will know more than most interview candidates after these 7 ideas.</b> Each idea is one paragraph + one command. Run them in order.</p></div>
+<div class="grid2">
+<div class="card"><div class="step"><div class="n">1</div><div><b>The log, not the database.</b> Five servers each keep a numbered list of commands. Same list + same order ⇒ same answer, always. Run <span class="kbd">python3 experiments/exp_overlap.py</span> first? No — start with order: two servers run <code>set x=1; add 4</code> in opposite orders and get 5 vs 1. That is why order is everything.</div></div></div>
+<div class="card"><div class="step"><div class="n">2</div><div><b>Majority = truth.</b> With 5 servers, 3 is a majority. Any two groups of 3 share a server, so no two majorities can disagree unknowingly. <span class="kbd">exp_overlap.py</span> checks all 45 pairs. Groups of 2 fail 15/45 — that is why Raft never commits with 2/5.</div></div></div>
+<div class="card"><div class="step"><div class="n">3</div><div><b>One boss: the leader.</b> Clients talk only to the leader; followers copy. Heartbeats every 50ms say “I am alive”. Miss 150–300ms of them and a follower runs for election. <span class="kbd">exp_election.py</span> boots a leader in ~190ms.</div></div></div>
+<div class="card"><div class="step"><div class="n">4</div><div><b>Split votes need jitter.</b> Three followers timing out together each get ~1 vote — nobody wins. Random timers break the tie. Zero jitter: 200/200 stuck. 150ms jitter: median ~206ms, worst ~516ms. Randomness fixes the <i>tail</i>, not just the average.</div></div></div>
+<div class="card"><div class="step"><div class="n">5</div><div><b>Copy, check, commit.</b> Leader sends entries + “what came before”. Followers reject mismatches; leader steps back and retries. On 3/5 copies the entry is <i>committed</i> (~20ms = one round trip). One dead server changes nothing. <span class="kbd">exp_replication.py</span></div></div></div>
+<div class="card"><div class="step"><div class="n">6</div><div><b>Two safety rules.</b> (1) Vote only for logs at least as new as yours — stops empty servers becoming boss. (2) Count only your own-term entries toward commit — old entries commit indirectly. Remove rule 1 and data loss is instant (<span class="kbd">exp_safety.py</span>). Rule 2 needs the exact crash sequence: random tests miss it, proofs catch it.</div></div></div>
+<div class="card"><div class="step"><div class="n">7</div><div><b>The chaos monkey.</b> Dice kill servers, cut networks, drop 5% of messages — while two alarms watch: one leader per term, one command per slot. 100 runs × 7,982 kills ⇒ zero alarms. Then the <i>same</i> code runs on real sockets (<span class="kbd">exp_live.py</span>, failover ~200ms). <span class="kbd">exp_chaos_1000.py</span></div></div></div>
+</div>
+
+<!-- QUICK START -->
+<h2 id="start">🚀 Quick start (3 commands, 60 seconds)</h2>
+<div class="grid2">
+<div class="card"><h3> Bare metal</h3><pre>git clone &lt;this-repo&gt; &amp;&amp; cd raft-consensus-universe-phd-2026
+python3 scripts/run_all.py --quick
+python3 -m pytest tests/ -q</pre><p class="mut">Needs only Python 3.10+. No pip install. First run ends with <b>ALL EXPERIMENTS PASSED</b>.</p></div>
+<div class="card"><h3> Docker (identical anywhere)</h3><pre>docker compose up --build raft-sim
+docker compose --profile chaos up --build raft-chaos
+docker compose --profile live up --build raft-live</pre><p class="mut"><code>raft-sim</code>: quick suite · <code>chaos</code>: 100×10s · <code>live</code>: real 5-node TCP cluster.</p></div>
+</div>
+
+<!-- BENCHMARKS -->
+<h2 id="benchmarks">📊 Benchmarks (every number re-runs from a seed)</h2>
+<div class="grid3">
+<div class="card"><h3>Split-vote sweep (200 trials/row)</h3><canvas id="cSplit" width="360" height="220"></canvas>
+<table><tr><th>Range</th><th>Stuck</th><th>Median</th><th>Worst</th></tr>
+<tr><td>150–150</td><td>200/200</td><td>—</td><td>—</td></tr>
+<tr><td>150–155</td><td>22/200</td><td>1778ms</td><td>8555ms</td></tr>
+<tr><td>150–175</td><td>0/200</td><td>334ms</td><td>1135ms</td></tr>
+<tr><td>150–200</td><td>0/200</td><td>191ms</td><td>712ms</td></tr>
+<tr><td><b>150–300</b></td><td><b>0/200</b></td><td><b>206ms</b></td><td><b>516ms</b></td></tr></table>
+<p class="mut">Source: <code>results/exp_election.csv</code>. Lesson: width kills the tail.</p></div>
+<div class="card"><h3>Replication (sim legs 5–15ms)</h3><canvas id="cRep" width="360" height="220"></canvas>
+<table><tr><th>Op</th><th>Time</th></tr><tr><td>Write 1 commit</td><td>19.6ms</td></tr><tr><td>Write 2 commit</td><td>19.7ms</td></tr><tr><td>Write 3 commit</td><td>21.4ms</td></tr><tr><td>Commit with 1 dead</td><td>24.9ms</td></tr><tr><td>Catch-up after restart</td><td>13.8ms</td></tr></table>
+<p class="mut">Source: <code>results/exp_replication.json</code>. One trip out + one back.</p></div>
+<div class="card"><h3>Chaos + safety</h3><canvas id="cChaos" width="360" height="220"></canvas>
+<table><tr><th>Suite</th><th>Result</th></tr><tr><td>Chaos 100×10s</td><td>7,982 kills · 0 broken</td></tr><tr><td>Partition heal</td><td>converge ~10ms sim</td></tr><tr><td>Vote rule OFF</td><td>P2 violation instantly</td></tr><tr><td>Live TCP failover</td><td>~200ms, 5/5 agree</td></tr></table>
+<p class="mut">Sources: <code>results/exp_chaos.json</code>, <code>exp_partition.json</code>, <code>exp_safety.json</code>.</p></div>
+</div>
+
+<!-- ARCH -->
+<h2>🧩 How it fits together</h2>
+<div class="card">
+<pre style="background:none;border:0">clients ──▶ LEADER ──AppendEntries(prev_idx,prev_term,entries[],commit)──▶ followers
+              │  nextIndex[]/matchIndex[] per follower · commit on 3/5 · apply in order
+              │  RequestVote(term,lastTerm,lastIndex) ◀── candidates on timeout 150–300ms
+         SimNet (heap clock, seeded, hostile)  ⇄  RealNet (TCP loopback, same Server)
+              │  chaos.py dice: 80% write / 6% kill / 6% restart / 4% cut / 4% heal + 5% loss
+              └── invariants.py: P1 ≤1 leader/term · P2 ≤1 cmd/index (aborts run on break)</pre>
+<p class="mut">Files: <code>src/raft/server.py</code> (the algorithm) · <code>net_sim.py</code> · <code>net_real.py</code> · <code>chaos.py</code> · <code>cluster.py</code> · <code>store.py</code>. Experiments: <code>experiments/exp_*.py</code> → <code>results/*.json</code>.</p>
+</div>
+
+<!-- VIDEO -->
+<h2 id="video">▶ Video demo (60 seconds, terminal)</h2>
+<div class="grid2">
+<div class="card">
+<video controls poster="" preload="none">
+<source src="docs/demo.mp4" type="video/mp4">Your browser cannot play video — use the GIF below or run <code>bash docs/demo.sh play</code>.
+</video>
+<p class="mut">If <code>docs/demo.mp4</code> is not committed yet, record it (one-time, 2 min):</p>
+<pre>bash docs/demo.sh play
+asciinema rec docs/demo.cast --command "bash docs/demo.sh play"
+agg docs/demo.cast docs/demo.gif
+agg docs/demo.cast docs/demo.mp4 --format mp4</pre>
+</div>
+<div class="card"><h3>GIF fallback</h3><p class="mut">Commit <code>docs/demo.gif</code> and it shows here + in the README. Until then, this animated panel replays the five demo steps.</p><img class="shot" id="gifShot" src="docs/demo.gif" alt="Terminal demo GIF (record with agg)" onerror="this.style.display='none'"><div id="gifMsg" class="mut">demo.gif not found — run the asciinema recipe above, or press play in the terminal.</div>
+<h3>Screenshots</h3><img class="shot" src="docs/screenshot-hero.png" alt="preview.html hero screenshot" onerror="this.style.display='none'"><br><br><img class="shot" src="docs/screenshot-benchmarks.png" alt="benchmarks screenshot" onerror="this.style.display='none'"></div>
+</div>
+
+<!-- STORIES -->
+<h2>👥 Who is this for (user stories)</h2>
+<div class="grid3">
+<div class="card"><b>🎓 Students</b><p>Learn consensus in an afternoon: run the beginner guide, break the vote rule, watch P2 fire. Interview-ready: explain terms, quorums, commit rules with measured numbers.</p></div>
+<div class="card"><b>💼 Backend engineers</b><p>See why etcd/Consul need 3 or 5 nodes, what a partition does to your writes, and why a minority must stall. Copy the retry + redirect pattern for your own leader.</p></div>
+<div class="card"><b>☸️ Platform operators</b><p>Rehearse kill-leader drills: expected failover ~200ms sim / ~240ms live. Tune election timeouts with the sweep table, not guesses.</p></div>
+<div class="card"><b>🔬 Researchers</b><p>Seven falsifiable patterns (H1–H7) with seeds + artefacts. Extend to snapshots (§7), membership (§6), pre-vote, or adaptive timeouts.</p></div>
+<div class="card"><b>🐵 Chaos engineers</b><p>Reuse <code>chaos.py</code> dice + P1/P2 alarms as a template for your own state machine. Ablation mode proves the harness can fail.</p></div>
+<div class="card"><b>🎤 Interview prep</b><p>Answer: “What happens when 2 of 5 die?” “Why random timeouts?” “Can two leaders coexist?” — with demos, not hand-waving.</p></div>
+</div>
+
+<!-- FAQ -->
+<h2>❓ FAQ + troubleshooting</h2>
+<div class="grid2">
+<div class="card"><b>Do I need to install anything?</b><p>No. Python 3.10+ only. Docker optional for identical reruns.</p><b>Why 5 servers, not 3 or 7?</b><p>3 tolerates 1, 5 tolerates 2, 7 tolerates 3. Even sizes waste a server (4 needs 3 — same as 3). Odd sizes only.</p><b>Can two leaders exist at once?</b><p>Yes, briefly, across terms during partitions. Only a majority can commit, so safety holds. The demo shows it.</p></div>
+<div class="card"><b>No leader for 5 seconds — bug?</b><p>With 2/5 alive, that is correct. A minority cannot tell death from partition, so it stalls rather than risk split-brain.</p><b>preview.html shows no GIF/video?</b><p>Record once: <code>bash docs/demo.sh play</code> → asciinema → <code>agg</code>. Commit <code>docs/demo.{cast,gif,mp4}</code>.</p><b>How do I publish this page?</b><p>See <a href="#pages">§ Pages</a>: Settings → Pages → Deploy from branch (<code>main</code>, <code>/root</code>) → open <code>.../preview.html</code>.</p></div>
+</div>
+
+<!-- PAGES -->
+<h2 id="pages">🌐 GitHub Pages (make this repo a website)</h2>
+<div class="card"><ol>
+<li>Commit <code>preview.html</code> at the repo root, push to <code>main</code>.</li>
+<li>GitHub → <b>Settings → Pages</b> → Source: <b>Deploy from a branch</b>, Branch: <code>main</code>, folder: <code>/ (root)</code>. Save.</li>
+<li>Wait ~1 minute → open <code>https://&lt;you&gt;.github.io/&lt;repo&gt;/preview.html</code>.</li>
+<li>Paste that URL at the top of the README as 🌐 Live demo.</li>
+</ol><p class="mut">Full checklist: <code>docs/PAGES.md</code>. This file is static (inline CSS/JS only) so branch deployment just works.</p></div>
+
+<h2>📚 Go deeper</h2>
+<p>README (full): <code>README.md</code> · Paper draft: <code>paper/PAPER.md</code> · Hidden patterns H1–H7: <code>analysis/HIDDEN_PATTERNS.md</code> · Results: <code>results/*.json</code> · Contributing: <code>CONTRIBUTING.md</code> · License: MIT.</p>
+</div>
+<footer>Raft Consensus Universe · MIT · deterministic by seed · based on Ongaro &amp; Ousterhout (2014) · run <code>python3 scripts/run_all.py --quick</code> to re-verify</footer>
+<script>
+// mini interactive cluster (illustrative, mirrors sim defaults)
+const N=5;let term=1,leader=2,alive=[1,1,1,1,1],log=3;
+const el=document.getElementById('nodes'),blog=document.getElementById('blog');
+function draw(msg){el.innerHTML='';for(let i=0;i<N;i++){const d=document.createElement('div');d.className='node'+(!alive[i]?'':(i===leader?' L':''));d.innerHTML=`<div class="dot"></div>S${i}${!alive[i]?' ✖':(i===leader?' ★ leader':'')}<br><span style="color:#aab6e6">log:${alive[i]?log:'—'}</span>`;el.appendChild(d);}if(msg)blog.textContent=msg;}
+draw();
+document.getElementById('bKill').onclick=()=>{if(leader<0)return;alive[leader]=0;const old=leader;leader=-1;draw(`S${old} killed — heartbeats stop, timers run…`);setTimeout(()=>{term++;let cands=[];for(let i=0;i<N;i++)if(alive[i])cands.push(i);leader=cands[Math.floor(Math.random()*cands.length)];draw(`term ${term} · S${leader} wins with 3/5 votes · heartbeats resume`);},900);};
+document.getElementById('bHeal').onclick=()=>{alive=[1,1,1,1,1];if(leader<0){term++;leader=Math.floor(Math.random()*N);}draw(`healed · term ${term} · leader S${leader} · logs converge`);};
+document.getElementById('bWrite').onclick=()=>{if(leader<0){draw('no leader — write waits (minority stalls by design)');return;}log++;draw(`client → S${leader}: entry #${log} · committed on 3/5 in ~20ms`);};
+// bar charts (real numbers from results/)
+function bars(id,vals){const c=document.getElementById(id);if(!c)return;const x=c.getContext('2d');const W=c.width=c.offsetWidth*2,H=c.height=440;const m=Math.max(...vals.map(v=>v[1]));x.clearRect(0,0,W,H);vals.forEach((v,i)=>{const bw=W/vals.length;const h=(H-70)*(v[1]/m);x.fillStyle=i===vals.length-1?'#34d399':'#7dd3fc';x.fillRect(i*bw+14,H-44-h,bw-28,h);x.fillStyle='#dbe4ff';x.font='20px sans-serif';x.fillText(v[0],i*bw+14,H-20);x.fillText(String(v[1]),i*bw+14,H-50-h);});}
+bars('cSplit',[['150-150',8555],['150-155',8555],['150-175',1135],['150-200',712],['150-300',516]]);
+bars('cRep',[['w1',19.6],['w2',19.7],['w3',21.4],['1dead',24.9],['catch',13.8]]);
+bars('cChaos',[['kills',7982],['writes',39501],['broken',0.5],['terms',40],['p95',9]]);
+const g=document.getElementById('gifShot');if(g){g.onerror=()=>{g.style.display='none';document.getElementById('gifMsg').style.display='block';};g.onload=()=>{document.getElementById('gifMsg').style.display='none';};}
+</script>
+</body>
+</html>

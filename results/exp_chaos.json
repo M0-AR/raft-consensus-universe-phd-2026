@@ -1,0 +1,47 @@
+{
+  "runs": 20,
+  "broken": 0,
+  "kills": 818,
+  "writes": 3877,
+  "sample": [
+    {
+      "seed": 50000,
+      "elected": true,
+      "kills": 39,
+      "restarts": 37,
+      "cuts": 40,
+      "writes": 178,
+      "committed_prefix": 159,
+      "log_len": 178,
+      "identical": true,
+      "inv_ok": true,
+      "max_term": 20
+    },
+    {
+      "seed": 50001,
+      "elected": true,
+      "kills": 44,
+      "restarts": 43,
+      "cuts": 46,
+      "writes": 183,
+      "committed_prefix": 183,
+      "log_len": 184,
+      "identical": true,
+      "inv_ok": true,
+      "max_term": 21
+    },
+    {
+      "seed": 50002,
+      "elected": true,
+      "kills": 40,
+      "restarts": 38,
+      "cuts": 43,
+      "writes": 213,
+      "committed_prefix": 212,
+      "log_len": 213,
+      "identical": true,
+      "inv_ok": true,
+      "max_term": 20
+    }
+  ]
+}

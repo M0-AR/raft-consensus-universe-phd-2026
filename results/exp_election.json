@@ -1,0 +1,54 @@
+{
+  "single": {
+    "seed": 7,
+    "old_leader": 3,
+    "new_leader": 4,
+    "downtime_ms": 196.0,
+    "term": 2
+  },
+  "minority": {
+    "alive": [
+      0,
+      1
+    ],
+    "leader_after_5s": null,
+    "term_grew": true
+  },
+  "sweep": [
+    {
+      "range": "150-150",
+      "trials": 200,
+      "stuck": 200,
+      "median_ms": null,
+      "worst_ms": null
+    },
+    {
+      "range": "150-155",
+      "trials": 200,
+      "stuck": 22,
+      "median_ms": 1777.8,
+      "worst_ms": 8555.1
+    },
+    {
+      "range": "150-175",
+      "trials": 200,
+      "stuck": 0,
+      "median_ms": 334.0,
+      "worst_ms": 1134.9
+    },
+    {
+      "range": "150-200",
+      "trials": 200,
+      "stuck": 0,
+      "median_ms": 191.1,
+      "worst_ms": 712.1
+    },
+    {
+      "range": "150-300",
+      "trials": 200,
+      "stuck": 0,
+      "median_ms": 205.9,
+      "worst_ms": 516.1
+    }
+  ]
+}
